@@ -13,3 +13,6 @@
 
 (test (index-of sample-attributes "NonExistentAttribute")
       -1)
+
+(test (get-attribute-value sample-attributes "Name" sample-tuple)
+      "David")

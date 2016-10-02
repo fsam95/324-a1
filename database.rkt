@@ -5,6 +5,7 @@
 <Name>, <CDF>, <ID>
 |#
 #lang racket
+(require "helpers.rkt")
 
 ; Function versions for common syntactic forms.
 ; *Use these in your queries instead of the syntactic forms!!!*
@@ -16,7 +17,8 @@
 ; to the provide statement.
 (provide attributes
          tuples
-         size)
+         size
+         get-attribute-value)
 
 ; Part 0: Semantic aliases
 
@@ -63,6 +65,9 @@ A function that takes:
 
   and returns the value of the tuple corresponding to that attribute.
 |#
+(define (get-attribute-value attribute-list attribute tuple)
+  (list-ref tuple (index-of attribute-list attribute))
+  )
 
 #|
 A function that takes:
