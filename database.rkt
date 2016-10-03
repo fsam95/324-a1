@@ -18,7 +18,9 @@
 (provide attributes
          tuples
          size
-         get-attribute-value)
+         get-attribute-value
+         filter-table
+         replace-attr)
 
 ; Part 0: Semantic aliases
 
@@ -77,6 +79,9 @@ A function that takes:
   and returns a new table containing only the tuples in 'table'
   that satisfy 'f'.
 |#
+(define (filter-table f table)
+  (filter f table)
+  )
 
 #|
 A function 'replace-attr' that takes:
@@ -88,6 +93,14 @@ A function 'replace-attr' that takes:
       in the tuple.
     - Otherwise, just ignore the tuple and return 'x'.
 |#
+(define (replace-attr x attributes)
+    (lambda (tuple) 
+      (if (member x attributes)
+        (get-attribute-value attributes x tuple)
+        x
+      )
+    )
+  )
 
 
 ; Starter for Part 3; feel free to ignore!
