@@ -22,6 +22,7 @@
          filter-table
          replace-attr
          extract-values
+         select
          )
 
 ; Part 0: Semantic aliases
@@ -113,13 +114,20 @@ A function 'replace-attr' that takes:
          attribute-list)
   )
 
-(define (select query filtered-table)
+(define (selection query filtered-table)
   (if 
-    (member query WILDCARD)
+    (equal? query WILDCARD)
     filtered-table
     (map (lambda (tuple)
-           extract-values(query tuple))
+           (extract-values query tuple))
          (tuples filtered-table))
+    )
+  )
+
+(define-syntax select
+  (syntax-rules (FROM)
+    [(SELECT query FROM table) 
+     (selection query table)]
     )
   )
 
