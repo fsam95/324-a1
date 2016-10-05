@@ -22,7 +22,7 @@
          filter-table
          replace-attr
          extract-values
-         select
+         SELECT
          )
 
 ; Part 0: Semantic aliases
@@ -105,7 +105,7 @@ A function 'replace-attr' that takes:
     )
   )
 
-(define WILDCARD "*")
+(define WILDCARD *)
 
 (define (extract-values attribute-list tuple)
   (map (lambda (attribute)
@@ -124,7 +124,7 @@ A function 'replace-attr' that takes:
     )
   )
 
-(define-syntax select
+(define-syntax SELECT
   (syntax-rules (FROM)
     [(SELECT query FROM table) 
      (selection query table)]
