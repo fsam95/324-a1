@@ -80,7 +80,7 @@ A function that takes:
   that satisfy 'f'.
 |#
 (define (filter-table f table)
-  (filter f table)
+  (filter f (tuples table))
   )
 
 #|

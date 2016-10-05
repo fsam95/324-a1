@@ -8,7 +8,7 @@
 (define sample-tuple-two '("Jen" 30 #t))
 (define sample-tuple-three '("Paul" 50 #f))
 (define sample-attributes-one '("Name" "Age" "LikesChocolate"))
-(define sample-table-one (list sample-tuple-one sample-tuple-two sample-tuple-three))
+(define sample-table-one (list sample-attributes-one sample-tuple-one sample-tuple-two sample-tuple-three))
 
 (define (f tuple) (> (list-ref tuple 1) 25))
 
