@@ -31,3 +31,6 @@
 (test ((replace-attr "Date of Birth" sample-attributes-one) sample-tuple-one)
       "Date of Birth")
 
+(test ((replace-attr "Age" sample-attributes-one) sample-tuple-one)
+      20)
+
