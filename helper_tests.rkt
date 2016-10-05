@@ -34,3 +34,5 @@
 (test ((replace-attr "Age" sample-attributes-one) sample-tuple-one)
       20)
 
+(test (extract-values '("Name" "Age") sample-tuple-one)
+      '("David" 20))

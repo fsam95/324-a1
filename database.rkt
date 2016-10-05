@@ -20,7 +20,9 @@
          size
          get-attribute-value
          filter-table
-         replace-attr)
+         replace-attr
+         extract-values
+         )
 
 ; Part 0: Semantic aliases
 
@@ -102,6 +104,24 @@ A function 'replace-attr' that takes:
     )
   )
 
+(define WILDCARD "*")
+
+(define (extract-values attribute-list tuple)
+  (map (lambda (attribute)
+         ((replace-attr attribute attribute-list) tuple)
+         )
+         attribute-list)
+  )
+
+(define (select query filtered-table)
+  (if 
+    (member query WILDCARD)
+    filtered-table
+    (map (lambda (tuple)
+           extract-values(query tuple))
+         (tuples filtered-table))
+    )
+  )
 
 ; Starter for Part 3; feel free to ignore!
 
