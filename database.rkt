@@ -23,6 +23,7 @@
          replace-attr
          extract-values
          SELECT
+         cartesian-product
          )
 
 ; Part 0: Semantic aliases
@@ -105,7 +106,6 @@ A function 'replace-attr' that takes:
     )
   )
 
-(define WILDCARD *)
 
 (define (extract-values query tuple attribute-list) ;s attribute list is query
   (map (lambda (attribute) 
@@ -125,23 +125,23 @@ A function 'replace-attr' that takes:
     )
   )
 
+
+(define WILDCARD *)
+
 (define-syntax SELECT
-  (syntax-rules (FROM)
+  (syntax-rules (FROM WHERE )
     [(SELECT query FROM table) 
      (selection query table)]
-    )
+;    [(SELECT query FROM [<table-one>] <next-table> ...)
+;     (#| TODO: fill in body|#)]
+    [(SELECT query FROM table WHERE filter-function)
+     (filter-table filter-function (selection query table))]
+    ))
+#|
+(cartesian-product 
+|#
+(define (cartesian-product table-one table-two)
+  (append (list (append (attributes table-one) (attributes table-two))) (append* (map (lambda (x) (map (lambda (y) (append x y)) (tuples table-two))) (tuples table-one))))
   )
 
-; Starter for Part 3; feel free to ignore!
 
-; What should this macro do?
-(define-syntax replace
-  (syntax-rules ()
-    ; The recursive step, when given a compound expression
-    [(replace (expr ...) table)
-     ; Change this!
-     (void)]
-    ; The base case, when given just an atom. This is easier!
-    [(replace atom table)
-     ; Change this!
-     (void)]))

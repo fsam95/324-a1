@@ -84,7 +84,8 @@ and your TAs will appreciate it!
    ("Hi" 10)))
 
 
-#|
+
+
 ; Select all from two product of two tables
 ;
 (test (SELECT * FROM [Person "P"] [Teaching "T"])
@@ -99,6 +100,7 @@ and your TAs will appreciate it!
         ("Paul" 100 #f "Paul" "CSC108")
         ("Paul" 100 #f "David" "CSC343")))
 
+#|
 ; Select some from two tables
 (test (SELECT '("P.Name" "Course" "Age") FROM [Person "P"] [Teaching "T"])
       '(("P.Name" "Course" "Age")
