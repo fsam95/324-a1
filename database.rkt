@@ -107,20 +107,21 @@ A function 'replace-attr' that takes:
 
 (define WILDCARD *)
 
-(define (extract-values attribute-list tuple)
-  (map (lambda (attribute)
-         ((replace-attr attribute attribute-list) tuple)
+(define (extract-values query tuple attribute-list) ;s attribute list is query
+  (map (lambda (attribute) 
+         ((replace-attr attribute attribute-list) tuple) 
          )
-         attribute-list)
+         query)
+
   )
 
 (define (selection query filtered-table)
   (if 
     (equal? query WILDCARD)
     filtered-table
-    (map (lambda (tuple)
-           (extract-values query tuple))
-         (tuples filtered-table))
+    (append (list query) (map (lambda (tuple)
+           (extract-values query tuple (list-ref filtered-table 0)))
+         (tuples filtered-table)))
     )
   )
 

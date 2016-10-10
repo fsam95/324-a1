@@ -50,6 +50,7 @@ and your TAs will appreciate it!
 
 ; ---- SELECT/FROM tests ----
 ; Select all
+; good
 (test (SELECT * FROM Person)
       '(("Name" "Age" "LikesChocolate") 
         ("David" 20 #t) 
@@ -82,7 +83,10 @@ and your TAs will appreciate it!
    ("Bye" 5)
    ("Hi" 10)))
 
+
+#|
 ; Select all from two product of two tables
+;
 (test (SELECT * FROM [Person "P"] [Teaching "T"])
       '(("P.Name" "Age" "LikesChocolate" "T.Name" "Course")
         ("David" 20 #t "David" "CSC324")
@@ -375,4 +379,5 @@ and your TAs will appreciate it!
    (10 "Hi" "Bye")
    (10 "Dog" "Cat")))
 
+|#
 
