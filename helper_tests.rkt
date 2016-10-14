@@ -32,7 +32,7 @@
       "David")
 
 (test (filter-table f Person)
-      (list sample-tuple-two sample-tuple-three))
+      (append (list (attributes Person)) (list sample-tuple-two sample-tuple-three)))
 
 (test ((replace-attr "Age" sample-attributes-one) sample-tuple-one)
       20)
@@ -46,3 +46,13 @@
     ("Jen" 30 #t "David" "CSC324")
     ("Paul" 100 #f "David" "CSC324")))
 
+(test (string-index-of "T.name" ".")
+      1)
+
+(test (string-index-of "E1.name" ".")
+      2)
+
+(test (modify-query '("P.Name" "Age" "T.Name" "Course") "P")
+      '("Name" "Age" "Course"))
+
+(test (combine-tables (

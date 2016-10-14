@@ -24,6 +24,8 @@
          extract-values
          SELECT
          cartesian-product
+         string-index-of
+         modify-query
          )
 
 ; Part 0: Semantic aliases
@@ -83,29 +85,37 @@ A function that takes:
   and returns a new table containing only the tuples in 'table'
   that satisfy 'f'.
 |#
-(define (filter-table f table)
-  (filter f (tuples table))
+(define (filter-table f table) ;(equal? "Name" "David")
+  (cons (list-ref table 0) (filter f (tuples table)))
   )
 
 #|
 A function 'replace-attr' that takes:
-  - x 
+  - attribute-name 
   - a list of attributes
 
   and returns a function 'f' which takes a tuple and does the following:
-    - If 'x' is in the list of attributes, return the corrresponding value 
+    - If 'attribute-name' is in the list of attributes, return the corrresponding value 
       in the tuple.
-    - Otherwise, just ignore the tuple and return 'x'.
+    - Otherwise, just ignore the tuple and return 'attribute-name'.
 |#
-(define (replace-attr x attributes)
+(define (replace-attr attribute-name  attributes)
     (lambda (tuple) 
-      (if (member x attributes)
-        (get-attribute-value attributes x tuple)
-        x
+      (if (member attribute-name attributes)
+        (get-attribute-value attributes attribute-name tuple)
+        attribute-name
       )
     )
   )
 
+#|
+(define (unary pred attributes attribute-index)
+  (lambda (tuple)
+    ((list-ref pred 0) (get-attribute-value attributes attribute-name tuple))
+    )
+  )
+|#
+  
 
 (define (extract-values query tuple attribute-list) ;s attribute list is query
   (map (lambda (attribute) 
@@ -128,15 +138,51 @@ A function 'replace-attr' that takes:
 
 (define WILDCARD *)
 
+#|
+Probably have to 
+create the filter-function on your own
+|#
 (define-syntax SELECT
   (syntax-rules (FROM WHERE )
-    [(SELECT query FROM table) 
-     (selection query table)]
-;    [(SELECT query FROM [<table-one>] <next-table> ...)
-;     (#| TODO: fill in body|#)]
-    [(SELECT query FROM table WHERE filter-function)
-     (filter-table filter-function (selection query table))]
+    [(SELECT <query> FROM <table>) 
+     (selection <query> <table>)]
+    [(SELECT <query> FROM <table> WHERE <pred>)
+     (selection <query> (filter-table (replace <pred> <table>) <table>))]
+;     (filter-table (replace (list <pred>) (selection <query> <table>)))] 
+   [(SELECT <query> FROM [<table> <name>])
+    (SELECT <query> FROM <table>)]
+   [(SELECT <query> FROM [<table1> <name>] <next-pair> ...)
+    (cartesian-product (selection (modify-query <query> <name>) <table1>) 
+                    (SELECT <query> FROM <next-pair> ...))]
     ))
+
+
+#|
+;Remove irrelevant items in this query 
+TODO
+|#
+(define (modify-query query name [lst '()])
+  (if (equal? query WILDCARD) query
+    (if (null? query) lst
+      (if (string-contains? (car query) ".") 
+        (if (equal? (substring (car query) 0 (string-index-of (car query) ".")) name)
+          (modify-query (rest query) name (append lst (list (substring (car query) (+ (string-index-of (car query) ".") 1)))))
+          (modify-query (rest query) name lst)
+          )
+        (modify-query (rest query) name (append lst (list (car query))))
+        )
+      )
+    )
+  )
+
+#|
+(define (combine-tables table1 table2 [i 0] [combined '()])
+  (if (null? table1) combined
+    (combine-tables table1 table2 (+ 1 i) (append combined (append (list-ref table1 i) (list-ref table2 i))))
+    )
+  )
+|#
+
 #|
 (cartesian-product 
 |#
@@ -144,4 +190,28 @@ A function 'replace-attr' that takes:
   (append (list (append (attributes table-one) (attributes table-two))) (append* (map (lambda (x) (map (lambda (y) (append x y)) (tuples table-two))) (tuples table-one))))
   )
 
+#|
+Return index of first occurence of character char
+|#
+(define (string-index-of str char [pos 0])
+  (if (equal? str "")
+    -1 
+    (if (equal? (substring str 0 1) char) pos
+      (string-index-of (substring str 1) char (+ 1 pos)))
+    )
+  )
+
+(define-syntax replace 
+  (syntax-rules ()
+
+    ;Recursive step when given compound expression
+    [(replace (<pred> ...) table) ;(< "Age" 20)
+     (unary (list pred) (list-ref table 0) )
+     ]
+    ; The base case
+    [(replace <pred> table) ;LikesChocolate
+     (replace-attr <pred> (list-ref table 0))
+     ]
+  ))
+    
 
