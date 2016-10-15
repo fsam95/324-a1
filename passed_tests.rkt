@@ -76,20 +76,6 @@ and your TAs will appreciate it!
    ("Bye" 5)
    ("Hi" 10)))
 
-   (test (SELECT *
-        FROM Person
-        WHERE "LikesChocolate")
-      '(("Name" "Age" "LikesChocolate")
-        ("David" 20 #t)
-        ("Jen" 30 #t)))
-
-; Attribute as condition, select subset
-(test (SELECT '("LikesChocolate" "Name")
-        FROM Person
-        WHERE "LikesChocolate")
-      '(("LikesChocolate" "Name")
-        (#t "David")
-        (#t "Jen")))
 ; Select all from product of 2 tables 
 (test (SELECT * FROM [Person "P"] [Teaching "T"])
       '(("P.Name" "Age" "LikesChocolate" "T.Name" "Course")
@@ -102,6 +88,9 @@ and your TAs will appreciate it!
         ("Paul" 100 #f "David" "CSC324")
         ("Paul" 100 #f "Paul" "CSC108")
         ("Paul" 100 #f "David" "CSC343")))
+
+(test (substitute '("Age" "Name") '("Age" "Blah") "T")
+      '("T.Age" "Name"))
 #|
 (test (SELECT *
         FROM Person

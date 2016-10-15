@@ -25,7 +25,7 @@
          SELECT
          cartesian-product
          string-index-of
-         modify-query
+         substitute
          )
 
 ; Part 0: Semantic aliases
@@ -144,64 +144,36 @@ create the filter-function on your own
 |#
 (define-syntax SELECT
   (syntax-rules (FROM WHERE ORDER BY)
+    [(SELECT <query> FROM [<table1> <name1>] [<table2> <name2>] <next-table> ...)
+     (SELECT <query> FROM [(cartesian-product <table1> <table2> <name1> <name2>)] <next-table> ...)]
+
     [(SELECT <query> FROM <table>) 
      (selection <query> <table>)]
-     #|
-    [(SELECT <query> FROM <table> ORDER BY <ord>) ;order by "Age"
-     How are we gonna implement this?
-     It's gonna end by some sort 
-     (let ([table (selection <query> <table>)]) 
-           (append (list (attributes <table>)) (sort (tuples table) > #:key (replace-attr <ord> (attributes table))))
-           )]
-     |#
-    [(SELECT <query> FROM <table> WHERE <pred>)
-     (selection <query> (filter-table (replace <pred> <table>) <table>))]
-   [(SELECT <query> FROM [<table1> <name>] <next-pair> ...)
-    (cartesian-product (selection (modify-query <query> <name>) <table1>) 
-                    (SELECT <query> FROM <next-pair> ...))]
-   [(SELECT <query> FROM [<table> <name>])
-    (selection <query> FROM <table>)]
+    [(SELECT <query> FROM [<table> <name>])
+     (selection <query> <table>)]
     ))
 
 
-#|
-;Remove irrelevant items in this query 
-TODO
-|#
-(define (modify-query query name [lst '()])
-  (if (equal? query WILDCARD) query
-    (if (null? query) lst
-      (if (string-contains? (car query) ".") 
-        (if (equal? (substring (car query) 0 (string-index-of (car query) ".")) name)
-          (modify-query (rest query) name (append lst (list (substring (car query) (+ (string-index-of (car query) ".") 1)))))
-          (modify-query (rest query) name lst)
-          )
-        (modify-query (rest query) name (append lst (list (car query))))
-        )
-      )
-    )
+
+(define (cartesian-product table-one table-two name-one name-two)
+;  (append (list (append (substitute-attribs 
+  (let ([combined-attributes (append (substitute (attributes table-one) (attributes table-two) name-one) (substitute (attributes table-two) (attributes table-one) name-two))]) 
+    (append (list combined-attributes) (cartesian-product-tuples table-one table-two)))
   )
 
-#|
-(define (combine-tables table1 table2 [i 0] [combined '()])
-  (if (null? table1) combined
-    (combine-tables table1 table2 (+ 1 i) (append combined (append (list-ref table1 i) (list-ref table2 i))))
-    )
+(define (substitute attrs1 attrs2 name-one)
+  (map (lambda (attr1)
+         (if (member attr1 attrs2)
+            (string-append (string-append name-one ".") attr1)
+            attr1) )attrs1)
   )
-|#
 
-#|
-(define (cartesian-product table-one table-two)
-  (append (list (append (attributes table-one) (attributes table-two))) (append* (map (lambda (x) (map (lambda (y) (append x y)) (tuples table-two))) (tuples table-one))))
+(define (cartesian-product-tuples table-one table-two)
+  (append* (map (lambda (x)
+                  (map (lambda (y)
+                         (append (x y))) (tuples table-two))
+                  ) (tuples table-one)))
   )
-|#
-
-(define-syntax cartesian-product
-  (syntax-rules ()
-    [(cartesian-product table-one table-two)
-      (append (list (append (attributes table-one) (attributes table-two))) (append* (map (lambda (x) (map (lambda (y) (append x y)) (tuples table-two))) (tuples table-one))))]
-  )
-    )
 
 #|
 Return index of first occurence of character char
@@ -213,19 +185,4 @@ Return index of first occurence of character char
       (string-index-of (substring str 1) char (+ 1 pos)))
     )
   )
-
-(define-syntax replace 
-  (syntax-rules ()
-
-    ;Recursive step when given compound expression
-    [(replace (<pred> ...) table) ;(< "Age" 20)
-;     (unary (list pred) (list-ref table 0) )
-      (
-     ]
-    ; The base case
-    [(replace <pred> table) ;LikesChocolate
-     (replace-attr <pred> (list-ref table 0))
-     ]
-  ))
-    
 
