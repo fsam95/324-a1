@@ -91,7 +91,7 @@ and your TAs will appreciate it!
         (#t "David")
         (#t "Jen")))
 ; Select all from product of 2 tables 
-(test (SELECT * FROM [Person "P"] [Teaching "T"] [Person "P2"])
+(test (SELECT * FROM [Person "P"] [Teaching "T"])
       '(("P.Name" "Age" "LikesChocolate" "T.Name" "Course")
         ("David" 20 #t "David" "CSC324")
         ("David" 20 #t "Paul" "CSC108")
@@ -102,3 +102,12 @@ and your TAs will appreciate it!
         ("Paul" 100 #f "David" "CSC324")
         ("Paul" 100 #f "Paul" "CSC108")
         ("Paul" 100 #f "David" "CSC343")))
+#|
+(test (SELECT *
+        FROM Person
+        ORDER BY "Age")
+      '(("Name" "Age" "LikesChocolate")
+        ("Paul" 100 #f)
+        ("Jen" 30 #t)
+        ("David" 20 #t)))
+|#

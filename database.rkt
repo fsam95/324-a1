@@ -143,17 +143,24 @@ Probably have to
 create the filter-function on your own
 |#
 (define-syntax SELECT
-  (syntax-rules (FROM WHERE )
+  (syntax-rules (FROM WHERE ORDER BY)
     [(SELECT <query> FROM <table>) 
      (selection <query> <table>)]
+     #|
+    [(SELECT <query> FROM <table> ORDER BY <ord>) ;order by "Age"
+     How are we gonna implement this?
+     It's gonna end by some sort 
+     (let ([table (selection <query> <table>)]) 
+           (append (list (attributes <table>)) (sort (tuples table) > #:key (replace-attr <ord> (attributes table))))
+           )]
+     |#
     [(SELECT <query> FROM <table> WHERE <pred>)
      (selection <query> (filter-table (replace <pred> <table>) <table>))]
-;     (filter-table (replace (list <pred>) (selection <query> <table>)))] 
-   [(SELECT <query> FROM [<table> <name>])
-    (SELECT <query> FROM <table>)]
    [(SELECT <query> FROM [<table1> <name>] <next-pair> ...)
     (cartesian-product (selection (modify-query <query> <name>) <table1>) 
                     (SELECT <query> FROM <next-pair> ...))]
+   [(SELECT <query> FROM [<table> <name>])
+    (selection <query> FROM <table>)]
     ))
 
 
@@ -184,11 +191,17 @@ TODO
 |#
 
 #|
-(cartesian-product 
-|#
 (define (cartesian-product table-one table-two)
   (append (list (append (attributes table-one) (attributes table-two))) (append* (map (lambda (x) (map (lambda (y) (append x y)) (tuples table-two))) (tuples table-one))))
   )
+|#
+
+(define-syntax cartesian-product
+  (syntax-rules ()
+    [(cartesian-product table-one table-two)
+      (append (list (append (attributes table-one) (attributes table-two))) (append* (map (lambda (x) (map (lambda (y) (append x y)) (tuples table-two))) (tuples table-one))))]
+  )
+    )
 
 #|
 Return index of first occurence of character char
@@ -206,7 +219,8 @@ Return index of first occurence of character char
 
     ;Recursive step when given compound expression
     [(replace (<pred> ...) table) ;(< "Age" 20)
-     (unary (list pred) (list-ref table 0) )
+;     (unary (list pred) (list-ref table 0) )
+      (
      ]
     ; The base case
     [(replace <pred> table) ;LikesChocolate
