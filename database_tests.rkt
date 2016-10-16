@@ -10,7 +10,7 @@
 (abridged-test-output #t)
 
 ; This imports your file; do not change this line!
-(require "database.rkt")
+(require "database2.rkt")
 
 ; Test helpers - use these instead of the built-in syntactic forms.
 ; DON'T export them from database.rkt!
@@ -100,7 +100,7 @@ and your TAs will appreciate it!
         ("Paul" 100 #f "Paul" "CSC108")
         ("Paul" 100 #f "David" "CSC343")))
 
-#|
+
 ; Select some from two tables
 (test (SELECT '("P.Name" "Course" "Age") FROM [Person "P"] [Teaching "T"])
       '(("P.Name" "Course" "Age")
@@ -381,5 +381,5 @@ and your TAs will appreciate it!
    (10 "Hi" "Bye")
    (10 "Dog" "Cat")))
 
-|#
+
 

@@ -149,16 +149,21 @@ and your TAs will appreciate it!
         ("Paul" 100 #f "David" "CSC324")
         ("Paul" 100 #f "Paul" "CSC108")
         ("Paul" 100 #f "David" "CSC343")))
-
 (test (SELECT *
         FROM Person
         WHERE "LikesChocolate")
       '(("Name" "Age" "LikesChocolate")
         ("David" 20 #t)
         ("Jen" 30 #t)))
-      
 (test (SELECT *
         FROM Person
-        WHERE (> Age 25))
+        WHERE (> "Age" 25))
       '(("Name" "Age" "LikesChocolate")
-        ("Jen" 30 #t)))
+        ("Jen" 30 #t)
+        ("Paul" 100 #f)))
+
+;(test (replace (> "Age" 25) Person)
+;      (list (replace-attr > (attributes Person)) (replace-attr "Age" (attributes Person)) (replace-attr 25 (attributes Person))))
+
+(test (substitute (list (replace-attr > (attributes Person)) (replace-attr "Age" (attributes Person)) (replace-attr 25 (attributes Person))) '("Jen" 30 #t))
+      (list > 30 25))

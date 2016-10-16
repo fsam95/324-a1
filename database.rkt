@@ -31,6 +31,8 @@
          strip-prefix
          strip-names
          rename-unique-attrs
+         replace
+         substitute
          )
 
 ; Part 0: Semantic aliases
@@ -91,7 +93,7 @@ A function that takes:
   that satisfy 'f'.
 |#
 (define (filter-table f table) ;(equal? "Name" "David")
-  (cons (list-ref table 0) (filter f (tuples table)))
+  (cons (attributes table) (filter f (tuples table)))
   )
 
 #| 
@@ -122,14 +124,17 @@ A function 'replace-attr' that takes:
     )
   )
 
-#|
-(define (unary pred attributes attribute-index)
-  (lambda (tuple)
-    ((list-ref pred 0) (get-attribute-value attributes attribute-name tuple))
-    )
+(define (substitute lambdas tuple)
+    (if (null? lambdas) '()
+      (append (list ((first lambdas) tuple)) (substitute (rest lambdas) tuple)))
   )
-|#
-  
+
+(define (where lambdas table)
+  (filter-table (lambda (tuple)
+                  (let ([subbed-expr (substitute lambdas tuple)])
+                    (if (equal? (length subbed-expr) 1) (first subbed-expr)
+                      (eval (substitute lambdas tuple) ns)) )) table)
+  )
 
 (define (extract-values query tuple attribute-list) ;s attribute list is query
   (map (lambda (attribute) 
@@ -167,9 +172,8 @@ create the filter-function on your own
     [(SELECT <query> FROM <table>) 
      (selection <query> (rename-unique-attrs <table>))]
     [(SELECT <query> FROM <table> WHERE <pred>)
-     (SELECT <query> FROM (filter-table (replace <pred> <table>) <table>))]
-    [(SELECT <query> FROM <table> WHERE <pred>)
-     (SELECT <query> FROM (filter-table (replace <pred> (SELECT * FROM <table>))))]
+     (SELECT <query> FROM (where (replace <pred> (attributes <table>)) 
+                                        (SELECT * FROM <table>)))]
     ))
 
 (define (rename-unique-attrs table)
@@ -234,14 +238,13 @@ Return index of first occurence of character char
 
 (define-syntax replace
   (syntax-rules ()
-    [(replace (expr ...) table) ; (> "Age" 25)
+    [(replace (expr ...) attrs) ; (> "Age" 25)
      (let ([func (map (lambda (atom) 
-            (replace-attr atom (attributes table))
+            (replace-attr atom attrs)
             )(list expr ...))])
-       (lambda (tuple)
-        (eval (list func)  ns))
-       )
+       func)
      ]
-    [(replace atom table)
-     (replace-attr atom (attributes table))]
+    [(replace atom attributes)
+     (list (replace-attr atom attributes))]
     ))
+
