@@ -25,11 +25,7 @@
     ("Paul" "CSC108")
     ("David" "CSC343")
     ))
-(define TeachingTwo
-  '(("Name" "Building")
-    ("David" "BA")
-    ("Paul" "WI")
-    ))
+
 
 #|
 All tests go below. 
@@ -80,7 +76,6 @@ and your TAs will appreciate it!
    ("Bye" 5)
    ("Hi" 10)))
 
-
 ; Select all from product of 2 tables 
 (test (SELECT * FROM [Person "P"] [Teaching "T"])
       '(("P.Name" "Age" "LikesChocolate" "T.Name" "Course")
@@ -94,19 +89,13 @@ and your TAs will appreciate it!
         ("Paul" 100 #f "Paul" "CSC108")
         ("Paul" 100 #f "David" "CSC343")))
 
-(test (cartesian-product-one Person Teaching "T")
-      '(("Name" "Age" "LikesChocolate" "T.Name" "T.Course") 
-        ("David" 20 #t "David" "CSC324")
-        ("David" 20 #t "Paul" "CSC108")
-        ("David" 20 #t "David" "CSC343")
-        ("Jen" 30 #t "David" "CSC324")
-        ("Jen" 30 #t "Paul" "CSC108")
-        ("Jen" 30 #T "David" "CSC343")
-        ("Paul" 100 #f "David" "CSC324")
-        ("Paul" 100 #f "Paul" "CSC108")
-        ("Paul" 100 #f "David" "CSC343")))
-      
-(test (cartesian-product-two Person Teaching "P" "T")
+(test (substitute '("Age" "Name") '("Age" "Blah") "T")
+      '("T.Age" "Name"))
+
+(test (name-cols '("Age" "Name") "P")
+      '("P.Age" "P.Name"))
+
+(test (cartesian-product-one Person Teaching "P" "T")
       '(("P.Name" "P.Age" "P.LikesChocolate" "T.Name" "T.Course") 
         ("David" 20 #t "David" "CSC324")
         ("David" 20 #t "Paul" "CSC108")
@@ -118,47 +107,12 @@ and your TAs will appreciate it!
         ("Paul" 100 #f "Paul" "CSC108")
         ("Paul" 100 #f "David" "CSC343")))
 
-
-(test (cartesian-product (tuples Person) (tuples Teaching))
-        '(("David" 20 #t "David" "CSC324")
-        ("David" 20 #t "Paul" "CSC108")
-        ("David" 20 #t "David" "CSC343")
-        ("Jen" 30 #t "David" "CSC324")
-        ("Jen" 30 #t "Paul" "CSC108")
-        ("Jen" 30 #T "David" "CSC343")
-        ("Paul" 100 #f "David" "CSC324")
-        ("Paul" 100 #f "Paul" "CSC108")
-        ("Paul" 100 #f "David" "CSC343")))
-
-(test (string-index-of "David" "a")
-      1)
-
-(test (strip-prefix "P.Name")
-      "Name")
-(test (strip-names '("P.Name" "Age" "T.Course"))
-      '("Name" "Age" "Course"))
-
-(test (rename-unique-attrs (cartesian-product-two Person Teaching "P" "T"))
-      '(("P.Name" "Age" "LikesChocolate" "T.Name" "Course")
-        ("David" 20 #t "David" "CSC324")
-        ("David" 20 #t "Paul" "CSC108")
-        ("David" 20 #t "David" "CSC343")
-        ("Jen" 30 #t "David" "CSC324")
-        ("Jen" 30 #t "Paul" "CSC108")
-        ("Jen" 30 #T "David" "CSC343")
-        ("Paul" 100 #f "David" "CSC324")
-        ("Paul" 100 #f "Paul" "CSC108")
-        ("Paul" 100 #f "David" "CSC343")))
-
+#|
 (test (SELECT *
         FROM Person
-        WHERE "LikesChocolate")
+        ORDER BY "Age")
       '(("Name" "Age" "LikesChocolate")
-        ("David" 20 #t)
-        ("Jen" 30 #t)))
-      
-(test (SELECT *
-        FROM Person
-        WHERE (> Age 25))
-      '(("Name" "Age" "LikesChocolate")
-        ("Jen" 30 #t)))
+        ("Paul" 100 #f)
+        ("Jen" 30 #t)
+        ("David" 20 #t)))
+|#

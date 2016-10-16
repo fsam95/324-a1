@@ -12,7 +12,7 @@
 (define (And x y) (and x y))
 (define (Or x y) (or x y))
 (define (If x y z) (if x y z))
-(define ns (make-base-namespace))
+
 ; TODO: After you have defined your macro(s), make sure you add each one
 ; to the provide statement.
 (provide attributes
@@ -25,12 +25,7 @@
          SELECT
          cartesian-product
          string-index-of
-         name-cols
-         cartesian-product-one
-         cartesian-product-two
-         strip-prefix
-         strip-names
-         rename-unique-attrs
+         substitute
          )
 
 ; Part 0: Semantic aliases
@@ -94,14 +89,6 @@ A function that takes:
   (cons (list-ref table 0) (filter f (tuples table)))
   )
 
-#| 
-# f: '(>,  lambda(tuple), 25)
-(define (filter f table [ret '()])
-  (
-|#
-                             
-
-
 #|
 A function 'replace-attr' that takes:
   - attribute-name 
@@ -112,7 +99,6 @@ A function 'replace-attr' that takes:
       in the tuple.
     - Otherwise, just ignore the tuple and return 'attribute-name'.
 |#
-
 (define (replace-attr attribute-name  attributes)
     (lambda (tuple) 
       (if (member attribute-name attributes)
@@ -159,67 +145,34 @@ create the filter-function on your own
 (define-syntax SELECT
   (syntax-rules (FROM WHERE ORDER BY)
     [(SELECT <query> FROM [<table1> <name1>] [<table2> <name2>] <next-table> ...)
-     (SELECT <query> FROM (cartesian-product-two <table1> <table2> <name1> <name2>) <next-table> ...)]
-    [(SELECT <query> FROM <table1> [<table2> <name2>] <next-table> ...)
-     (SELECT <query> FROM (cartesian-product-one <table1> <table2> <name2>) <next-table> ...)]
-    [(SELECT <query> FROM [<quote> <table>]) 
-     (selection <query> (rename-unique-attrs (<quote> <table>)))]
+     (SELECT <query> FROM [(cartesian-product <table1> <table2> <name1> <name2>)] <next-table> ...)]
+    [(SELECT <query> FROM [<table> <name>])
+     (selection <query> <table>)]
     [(SELECT <query> FROM <table>) 
-     (selection <query> (rename-unique-attrs <table>))]
-    [(SELECT <query> FROM <table> WHERE <pred>)
-     (SELECT <query> FROM (filter-table (replace <pred> <table>) <table>))]
-    [(SELECT <query> FROM <table> WHERE <pred>)
-     (SELECT <query> FROM (filter-table (replace <pred> (SELECT * FROM <table>))))]
+     (selection <query> <table>)]
     ))
 
-(define (rename-unique-attrs table)
-  (let* ([raw-attribute-list (strip-names (attributes table))]
-    [fixed-attributes (map (lambda (attr)
-           (if (equal? 1 (count (lambda (other-attr) (equal? other-attr (strip-prefix attr))) raw-attribute-list))
-             (strip-prefix attr)
-             attr)
-           )
-         (attributes table))])
-    (append (list fixed-attributes) (tuples table))
-    )
+
+
+(define (cartesian-product table-one table-two name-one name-two)
+;  (append (list (append (substitute-attribs 
+  (let ([combined-attributes (append (substitute (attributes table-one) (attributes table-two) name-one) (substitute (attributes table-two) (attributes table-one) name-two))]) 
+    (append (list combined-attributes) (cartesian-product-tuples table-one table-two)))
   )
 
-(define (strip-names attributes)
-  (map (lambda (attribute) 
-         (strip-prefix attribute)) attributes)
+(define (substitute attrs1 attrs2 name-one)
+  (map (lambda (attr1)
+         (if (member attr1 attrs2)
+            (string-append (string-append name-one ".") attr1)
+            attr1) )attrs1)
   )
 
-(define (strip-prefix attribute)
-  (if (string-contains? attribute ".") 
-    (substring attribute (+ (string-index-of attribute ".") 1))
-    attribute))
-
-#|
-# Rename all attributes in table 2 by prepending the prefix 'name-two' 
-# onto every attribute
-|#
-(define (cartesian-product-one table-one table-two name-two)
-  (let ([combined-attributes (append (attributes table-one) (name-cols (attributes table-two) name-two))])
-    (append (list combined-attributes) (cartesian-product (tuples table-one) (tuples table-two))))
+(define (cartesian-product-tuples table-one table-two)
+  (append* (map (lambda (x)
+                  (map (lambda (y)
+                         (append (x y))) (tuples table-two))
+                  ) (tuples table-one)))
   )
-
-(define (name-cols attrs name)
-  (map (lambda (attr)
-      (string-append (string-append name ".") attr))
-       attrs)
-  )
-
-(define (cartesian-product-two table-one table-two name-one name-two)
-  (let ([combined-attributes (append (name-cols (attributes table-one) name-one) (name-cols (attributes table-two) name-two))]) 
-    (begin 
-      (print combined-attributes)
-      (append (list combined-attributes) (cartesian-product (tuples table-one) (tuples table-two))))
-      )
-  )
-
-(define (cartesian-product table1 table2)
-    (append* (map (lambda (x) (map (lambda (y) (append x y)) table2 )) table1))
-    )
 
 #|
 Return index of first occurence of character char
@@ -232,16 +185,3 @@ Return index of first occurence of character char
     )
   )
 
-(define-syntax replace
-  (syntax-rules ()
-    [(replace (expr ...) table) ; (> "Age" 25)
-     (let ([func (map (lambda (atom) 
-            (replace-attr atom (attributes table))
-            )(list expr ...))])
-       (lambda (tuple)
-        (eval (list func)  ns))
-       )
-     ]
-    [(replace atom table)
-     (replace-attr atom (attributes table))]
-    ))
