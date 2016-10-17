@@ -1,8 +1,8 @@
 #| Assignment 1 - Racket Query Language  (due Oct 14, 11:50pm)
 
 ***Write the names, CDF accounts and student IDs for each of your group members below.***
-<Name>, <CDF>, <ID>
-<Name>, <CDF>, <ID>
+S M Farhan Samir, c3samirs, 1000660439   
+Eddie Quan, <CDF>, <ID>
 |#
 #lang racket
 (require "helpers.rkt")
@@ -105,7 +105,7 @@ A function that takes:
 
 
 #|
-A function 'replace-attr' that takes:
+A function 'rplace-attr' that takes:
   - attribute-name 
   - a list of attributes
 
@@ -125,24 +125,17 @@ A function 'replace-attr' that takes:
   )
 
 (define (substitute lambdas tuple)
-    (if (null? lambdas) '()
-      (append (list ((first lambdas) tuple)) (substitute (rest lambdas) tuple)))
+    (if (list? lambdas) 
+      (if (null? lambdas) '()
+        (if (list? (first lambdas)) 
+          (cons (substitute (first lambdas) tuple) (substitute (rest lambdas) tuple))
+        (append (list ((first lambdas) tuple)) (substitute (rest lambdas) tuple))))
+
+        (append (list (lambdas tuple))))
+
   )
 
-(define (where lambdas table)
-  (filter-table (lambda (tuple)
-                  (let ([subbed-expr (substitute lambdas tuple)])
-                    (if (equal? (length subbed-expr) 1) (first subbed-expr)
-                      (eval (substitute lambdas tuple) ns)) )) table)
-  )
 
-(define (order-by lambdas table)
-  (append (list (attributes table)) (sort (tuples table) > #:key (lambda (tuple) 
-                                                                   (let ([subbed-expr (substitute lambdas tuple)])
-                                                                      (if (number? (first subbed-expr)) (first subbed-expr)
-                                                                        (eval subbed-expr ns))
-                                                                     ))))
-  )
 
 (define (extract-values query tuple attribute-list) ;s attribute list is query
   (map (lambda (attribute) 
@@ -157,6 +150,7 @@ A function 'replace-attr' that takes:
     (equal? query WILDCARD)
     filtered-table
     (append (list query) (map (lambda (tuple)
+
            (extract-values query tuple (list-ref filtered-table 0)))
          (tuples filtered-table)))
     )
@@ -169,40 +163,6 @@ A function 'replace-attr' that takes:
 Probably have to 
 create the filter-function on your own
 |#
-(define-syntax SELECT
-  (syntax-rules (FROM WHERE ORDER BY)
-    ;simple select
-    [(SELECT <query> FROM <table>) 
-     (selection <query> (rename-unique-attrs <table>))]
-
-    ;simple select, matches literal table
-    [(SELECT <query> FROM [<quote> <table>]) 
-     (selection <query> (rename-unique-attrs (<quote> <table>)))]
-
-    ;select, multiple tables 
-    [(SELECT <query> FROM [<table1> <name1>] [<table2> <name2>] <next-table> ...)
-     (SELECT <query> FROM (cartesian-product-two <table1> <table2> <name1> <name2>) <next-table> ...)]
-    [(SELECT <query> FROM <table1> [<table2> <name2>] <next-table> ...)
-     (SELECT <query> FROM (cartesian-product-one <table1> <table2> <name2>) <next-table> ...)]
-    
-    ;select, 1 table, where
-    [(SELECT <query> FROM <table> WHERE <pred>)
-     (SELECT <query> FROM (where (replace <pred> (attributes <table>)) 
-                                        (SELECT * FROM <table>)))]
-
-    ;select, multiple tables, where
-    
-
-    ;select, 1 table, order by
-    [(SELECT <query> FROM <table> ORDER BY <pred>)
-     (SELECT <query> FROM (order-by (replace <pred> (attributes <table>))
-                                    (SELECT * FROM <table>)))]
-
-    ;select, multiple tables, order by
-    
-    
-    ;select, multiple tables, order by, where
-    ))
 
 (define (rename-unique-attrs table)
   (let* ([raw-attribute-list (strip-names (attributes table))]
@@ -244,7 +204,6 @@ create the filter-function on your own
 (define (cartesian-product-two table-one table-two name-one name-two)
   (let ([combined-attributes (append (name-cols (attributes table-one) name-one) (name-cols (attributes table-two) name-two))]) 
     (begin 
-      (print combined-attributes)
       (append (list combined-attributes) (cartesian-product (tuples table-one) (tuples table-two))))
       )
   )
@@ -265,15 +224,68 @@ Return index of first occurence of character char
     )
   )
 
+(define (order-by lambdas table)
+  (append (list (attributes table)) (sort (tuples table) >= #:key (lambda (tuple) 
+           (let ([subbed-expr (substitute lambdas tuple)])
+              (if (number? (first subbed-expr)) 
+                (first subbed-expr)
+                (eval subbed-expr ns))
+             )))
+          )
+  )
+(define (where lambdas table)
+  (filter-table (lambda (tuple)
+                  (let ([subbed-expr (substitute lambdas tuple)])
+                    (if (equal? (length subbed-expr) 1) (first subbed-expr)
+                      (eval (substitute lambdas tuple) ns)) )) table)
+  )
+
 (define-syntax replace
   (syntax-rules ()
-    [(replace (expr ...) attrs) ; (> "Age" 25)
-     (let ([func (map (lambda (atom) 
-            (replace-attr atom attrs)
-            )(list expr ...))])
+    [(replace (exprs ...) attrs) ; (> "Age" 25)
+     (let ([func (list (replace exprs attrs) ...)])
        func)
      ]
     [(replace atom attributes)
-     (list (replace-attr atom attributes))]
+     (replace-attr atom attributes)]
     ))
 
+(define-syntax SELECT
+  (syntax-rules (FROM WHERE ORDER BY)
+    ;simple select
+    [(SELECT <query> FROM <table>) 
+     (selection <query> (rename-unique-attrs <table>))]
+
+    ;simple select, matches literal table
+    [(SELECT <query> FROM [<quote> <table>]) 
+     (selection <query> (rename-unique-attrs (<quote> <table>)))]
+
+    ;select, multiple tables 
+    [(SELECT <query> FROM [<table1> <name1>] [<table2> <name2>] <next-table> ...)
+     (SELECT <query> FROM (cartesian-product-two <table1> <table2> <name1> <name2>) <next-table> ...)]
+    [(SELECT <query> FROM <table1> [<table2> <name2>] <next-table> ...)
+     (SELECT <query> FROM (cartesian-product-one <table1> <table2> <name2>) <next-table> ...)]
+    
+    ;select, 1 table, where
+    [(SELECT <query> FROM <table> WHERE <pred>)
+     (SELECT <query> FROM (where (replace <pred> (attributes <table>)) 
+                                        (SELECT * FROM <table>)))]
+
+    ;select, multiple tables, where
+    
+
+    ;select, 1 table, order by
+    [(SELECT <query> FROM <table> ORDER BY <pred>)
+     (SELECT <query> FROM (order-by (replace <pred> (attributes <table>))
+                                    (SELECT * FROM <table>)))]
+
+    ;select, multiple tables, order by
+    
+    
+    ;select, multiple tables, order by, where
+    [(SELECT <query> FROM <table> WHERE <condition> ORDER BY <pred>)
+     (let ([filtered-table (SELECT <query> FROM (where (replace <pred> (attributes <table>)) 
+                                        (SELECT * FROM <table>)))]) 
+       (SELECT <query> FROM (order-by (replace <pred> (attributes filtered-table))
+                                      (SELECT * FROM filtered-table))))]
+    ))
