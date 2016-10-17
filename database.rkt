@@ -139,12 +139,23 @@ A function 'rplace-attr' that takes:
   (if 
     (equal? query WILDCARD)
     filtered-table
-    (append (list query) (map (lambda (tuple)
+    (append (list (validate-attrs-exist query (attributes filtered-table))) (map (lambda (tuple)
 
            (extract-values query tuple (list-ref filtered-table 0)))
          (tuples filtered-table)))
     )
   )
+
+(define (validate-attrs-exist query attrs)
+  (if (equal? (filter (column-in-attrs? attrs) query) query)
+      query
+      (raise '"Column not found")))
+
+(define (column-in-attrs? attrs)
+  (lambda (column-name)
+            (if (member column-name attrs)
+             #t
+             #f)))
 
 
 (define WILDCARD *)
