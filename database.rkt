@@ -173,7 +173,7 @@ create the filter-function on your own
              attr)
            )
          (attributes table))])
-    (append (list fixed-attributes) (tuples table))
+    (cons fixed-attributes (tuples table))
     )
   )
 
@@ -193,7 +193,7 @@ create the filter-function on your own
 |#
 (define (cartesian-product-one table-one table-two name-two)
   (let ([combined-attributes (append (attributes table-one) (name-cols (attributes table-two) name-two))])
-    (append (list combined-attributes) (cartesian-product (tuples table-one) (tuples table-two))))
+    (cons combined-attributes (cartesian-product (tuples table-one) (tuples table-two))))
   )
 
 (define (name-cols attrs name)
