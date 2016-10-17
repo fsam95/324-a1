@@ -149,7 +149,7 @@ A function 'rplace-attr' that takes:
 (define (validate-attrs-exist query attrs)
   (if (equal? (filter (column-in-attrs? attrs) query) query)
       query
-      (raise '"Column not found")))
+      '"Column not found"))
 
 (define (column-in-attrs? attrs)
   (lambda (column-name)

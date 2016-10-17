@@ -205,6 +205,10 @@ and your TAs will appreciate it!
 (test (SELECT * FROM '(()))
       '(()))
 
+; SELECT returns error message when querying for a column that does not exist
+(test (SELECT '("Name") FROM '(()))
+      '("Column not found"))
+
 ; ---- WHERE ----
 ; Attribute as condition, select all
 (test (SELECT *
