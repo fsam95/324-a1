@@ -1,8 +1,8 @@
 #| Assignment 1 - Racket Query Language  (due Oct 14, 11:50pm)
 
 ***Write the names, CDF accounts and student IDs for each of your group members below.***
-S M Farhan Samir, c3samirs, 1000660439   
-Eddie Quan, <CDF>, <ID>
+S M Farhan Samir, samirs, 1000660439   
+Eddie Quan, quaneddi, 999903476
 |#
 #lang racket
 (require "helpers.rkt")
@@ -62,11 +62,26 @@ Eddie Quan, <CDF>, <ID>
 #|
 (size table)
   table: a valid table
-
   Returns the number of tuples in 'table'.
 |#
 (define (size table)
   (length (tuples table))
+  )
+
+#|
+(index-of lst item [pos])
+ lst: list of items
+ item: item to search for
+ pos: index in list currently being checked
+
+ Returns the index of an item in a list
+|#
+(define (index-of lst item [pos 0])
+  (if (equal? pos (length lst)) -1
+    (if (equal? (list-ref lst pos) item) pos
+      (index-of lst item (+ pos 1))
+      )
+    )
   )
 
 
@@ -96,16 +111,9 @@ A function that takes:
   (cons (attributes table) (filter f (tuples table)))
   )
 
-#| 
-# f: '(>,  lambda(tuple), 25)
-(define (filter f table [ret '()])
-  (
-|#
-                             
-
 
 #|
-A function 'rplace-attr' that takes:
+A function 'replace-attr' that takes:
   - attribute-name 
   - a list of attributes
 
@@ -214,33 +222,60 @@ Return index of first occurence of character char
     )
   )
 
+#|
+  (substitute lambdas tuple)
+  lambdas: a list of lambdas (results of replace-attr on <pred> elements)
+  tuple: tuple that is used as argument for lambdas
+
+  Substitutes generalized expression (e.g '(+ "Age" "NumYearsTaught"))
+  with values from tuple (e.g '(+ 30 4))
+|#
 (define (substitute lambdas tuple)
     (if (list? lambdas) 
       (if (null? lambdas) '()
-        (if (list? (first lambdas)) 
-          (cons (substitute (first lambdas) tuple) (substitute (rest lambdas) tuple))
-        (append (list ((first lambdas) tuple)) (substitute (rest lambdas) tuple))))
-
-        (append (list (lambdas tuple))))
-
+        (if (list? (first lambdas)) ;nested list of lambdas (represents nested <pred>) 
+          (cons (substitute (first lambdas) tuple) (substitute (rest lambdas) tuple)) 
+          (cons ((first lambdas) tuple) (substitute (rest lambdas) tuple))))
+        (list (lambdas tuple)))
   )
 
+#|
+  (order-by lambdas table)
+  lambdas: a list of lambdas (results of replace-attr on <pred> elements)
+  table: a table
+
+  Helper function that sorts tuples according to 
+|#
 (define (order-by lambdas table)
   (append (list (attributes table)) (sort (tuples table) > #:key (lambda (tuple) 
            (let ([subbed-expr (substitute lambdas tuple)])
-              (if (number? (first subbed-expr)) 
+              (if (number? (first subbed-expr)) ;in case a number is returned (instead of function call); happens when ORDER by <pred> is a single attribute
                 (first subbed-expr)
                 (eval subbed-expr ns))
              )))
           )
   )
+
+#|
+  (where lambdas table)
+  lambdas: a list of lambdas (results of replace-attr on <condition> elements)
+  table: a table (duh)
+  
+  Helper function that filters tuples according to
+  <pred> specified in WHERE clause
+|#
 (define (where lambdas table)
   (filter-table (lambda (tuple)
-                  (let ([subbed-expr (substitute lambdas tuple)])
-                    (if (equal? (length subbed-expr) 1) (first subbed-expr)
-                      (eval (substitute lambdas tuple) ns)) )) table)
+    (let ([subbed-expr (substitute lambdas tuple)])
+      (if (equal? (length subbed-expr) 1) (first subbed-expr) ;in case (#t/#f) is returned (in place of function call); happens when WHERE <condition> is a single attribute
+        (eval (substitute lambdas tuple) ns)) )) table)
   )
 
+#|
+  Converts attributes and operators into lambdas
+  that return value of a tuple corresponding to that
+  tuple--or the operator itself
+|#
 (define-syntax replace
   (syntax-rules ()
     [(replace (exprs ...) attrs) ; (> "Age" 25)
@@ -261,17 +296,17 @@ Return index of first occurence of character char
     [(SELECT <query> FROM [<quote> <table>]) 
      (selection <query> (rename-unique-attrs (<quote> <table>)))]
 
-    ;select, multiple tables 
+    ;select from multiple tables 
     [(SELECT <query> FROM [<table1> <name1>] [<table2> <name2>] <next-table> ...)
      (SELECT <query> FROM (cartesian-product-two <table1> <table2> <name1> <name2>) <next-table> ...)]
     [(SELECT <query> FROM <table1> [<table2> <name2>] <next-table> ...)
      (SELECT <query> FROM (cartesian-product-one <table1> <table2> <name2>) <next-table> ...)]
     
-    ;select, 1 table, where
+    ;select with filtering
     [(SELECT <query> FROM <table> WHERE <pred>)
      (SELECT <query> FROM (where (replace <pred> (attributes <table>)) 
                                         (SELECT * FROM <table>)))]
-    ;select, 1 table, order by
+    ;select with ordering
     [(SELECT <query> FROM <table> ORDER BY <pred>)
      (SELECT <query> FROM (order-by (replace <pred> (attributes (SELECT * FROM <table>)))
                                     (SELECT * FROM <table>)))]

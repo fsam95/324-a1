@@ -16,7 +16,7 @@
 ; DON'T export them from database.rkt!
 (define (And x y) (and x y))
 (define (Or x y) (or x y))
-(define (If x y z) (if x y z))
+;(define (If x y z) (if x y z))
 
 ;
 ; Correction Oct 5 2016
