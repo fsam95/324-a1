@@ -149,6 +149,49 @@ and your TAs will appreciate it!
    (3 "Hi" 10 #t "Jen" 30 #t)
    (3 "Hi" 10 #t "Paul" 100 #f)))
 
+; Select some from more than two tables
+(test (SELECT '("P.Name" "Course" "Age" "H.Name" "Hobby" "Food") FROM [Person "P"] [Teaching "T"] [FaveFoods "F"] [Hobbies "H"])
+      '(("P.Name" "Course" "Age" "H.Name" "Hobby" "Food")
+        ("David" "CSC324" 20 "Jen" "Skiing" "Corn")
+        ("David" "CSC324" 20 "Paul" "Running" "Corn")
+        ("David" "CSC324" 20 "Jen" "Skiing" "Pizza")
+        ("David" "CSC324" 20 "Paul" "Running" "Pizza")
+        ("David" "CSC108" 20 "Jen" "Skiing" "Corn")
+        ("David" "CSC108" 20 "Paul" "Running" "Corn")
+        ("David" "CSC108" 20 "Jen" "Skiing" "Pizza")
+        ("David" "CSC108" 20 "Paul" "Running" "Pizza")
+        ("David" "CSC343" 20 "Jen" "Skiing" "Corn")
+        ("David" "CSC343" 20 "Paul" "Running" "Corn")
+        ("David" "CSC343" 20 "Jen" "Skiing" "Pizza")
+        ("David" "CSC343" 20 "Paul" "Running" "Pizza")
+        ("Jen" "CSC324" 30 "Jen" "Skiing" "Corn")
+        ("Jen" "CSC324" 30 "Paul" "Running" "Corn")
+        ("Jen" "CSC324" 30 "Jen" "Skiing" "Pizza")
+        ("Jen" "CSC324" 30 "Paul" "Running" "Pizza")
+        ("Jen" "CSC108" 30 "Jen" "Skiing" "Corn")
+        ("Jen" "CSC108" 30 "Paul" "Running" "Corn")
+        ("Jen" "CSC108" 30 "Jen" "Skiing" "Pizza")
+        ("Jen" "CSC108" 30 "Paul" "Running" "Pizza")
+        ("Jen" "CSC343" 30 "Jen" "Skiing" "Corn")
+        ("Jen" "CSC343" 30 "Paul" "Running" "Corn")
+        ("Jen" "CSC343" 30 "Jen" "Skiing" "Pizza")
+        ("Jen" "CSC343" 30 "Paul" "Running" "Pizza")
+        ("Paul" "CSC324" 100 "Jen" "Skiing" "Corn")
+        ("Paul" "CSC324" 100 "Paul" "Running" "Corn")
+        ("Paul" "CSC324" 100 "Jen" "Skiing" "Pizza")
+        ("Paul" "CSC324" 100 "Paul" "Running" "Pizza")
+        ("Paul" "CSC108" 100 "Jen" "Skiing" "Corn")
+        ("Paul" "CSC108" 100 "Paul" "Running" "Corn")
+        ("Paul" "CSC108" 100 "Jen" "Skiing" "Pizza")
+        ("Paul" "CSC108" 100 "Paul" "Running" "Pizza")
+        ("Paul" "CSC343" 100 "Jen" "Skiing" "Corn")
+        ("Paul" "CSC343" 100 "Paul" "Running" "Corn")
+        ("Paul" "CSC343" 100 "Jen" "Skiing" "Pizza")
+        ("Paul" "CSC343" 100 "Paul" "Running" "Pizza")))
+
+; SELECT does not die when given an empty table
+(test (SELECT * FROM '(()))
+      '(()))
 
 ; ---- WHERE ----
 ; Attribute as condition, select all
@@ -226,7 +269,6 @@ and your TAs will appreciate it!
         ("David" #t 30 "CSC324")
         ("Paul" #f 30 "CSC108")
         ("David" #t 30 "CSC343")))
-
 
 ; ---- ORDER BY ----
 ; Order by attribute
