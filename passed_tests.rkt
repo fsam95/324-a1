@@ -4,6 +4,7 @@
 ; This imports your file; do not change this line!
 (require "database.rkt")
 
+
 ; Test helpers - use these instead of the built-in syntactic forms.
 ; DON'T export them from database.rkt!
 (define (And x y) (and x y))
@@ -47,6 +48,7 @@ and your TAs will appreciate it!
 ; ---- SELECT/FROM tests ----
 ; Select all
 ; good
+
 
 (test (SELECT * FROM Person)
       '(("Name" "Age" "LikesChocolate") 
@@ -333,7 +335,6 @@ and your TAs will appreciate it!
    ("Paul" 100 #f "Paul" "CSC108")
    ("David" 20 #t "David" "CSC324")
    ("David" 20 #t "David" "CSC343")))
-
 (test
  (SELECT '("Name") 
    FROM Person 
@@ -342,7 +343,6 @@ and your TAs will appreciate it!
  '(("Name")
    ("Jen")
    ("David")))
-
 
 (test (SELECT *
         FROM [Person "P"] [Teaching "T"]

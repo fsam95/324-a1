@@ -124,16 +124,6 @@ A function 'rplace-attr' that takes:
     )
   )
 
-(define (substitute lambdas tuple)
-    (if (list? lambdas) 
-      (if (null? lambdas) '()
-        (if (list? (first lambdas)) 
-          (cons (substitute (first lambdas) tuple) (substitute (rest lambdas) tuple))
-        (append (list ((first lambdas) tuple)) (substitute (rest lambdas) tuple))))
-
-        (append (list (lambdas tuple))))
-
-  )
 
 
 
@@ -224,8 +214,19 @@ Return index of first occurence of character char
     )
   )
 
+(define (substitute lambdas tuple)
+    (if (list? lambdas) 
+      (if (null? lambdas) '()
+        (if (list? (first lambdas)) 
+          (cons (substitute (first lambdas) tuple) (substitute (rest lambdas) tuple))
+        (append (list ((first lambdas) tuple)) (substitute (rest lambdas) tuple))))
+
+        (append (list (lambdas tuple))))
+
+  )
+
 (define (order-by lambdas table)
-  (append (list (attributes table)) (sort (tuples table) >= #:key (lambda (tuple) 
+  (append (list (attributes table)) (sort (tuples table) > #:key (lambda (tuple) 
            (let ([subbed-expr (substitute lambdas tuple)])
               (if (number? (first subbed-expr)) 
                 (first subbed-expr)
@@ -270,22 +271,17 @@ Return index of first occurence of character char
     [(SELECT <query> FROM <table> WHERE <pred>)
      (SELECT <query> FROM (where (replace <pred> (attributes <table>)) 
                                         (SELECT * FROM <table>)))]
-
-    ;select, multiple tables, where
-    
-
     ;select, 1 table, order by
     [(SELECT <query> FROM <table> ORDER BY <pred>)
      (SELECT <query> FROM (order-by (replace <pred> (attributes <table>))
                                     (SELECT * FROM <table>)))]
 
-    ;select, multiple tables, order by
-    
-    
     ;select, multiple tables, order by, where
     [(SELECT <query> FROM <table> WHERE <condition> ORDER BY <pred>)
-     (let ([filtered-table (SELECT <query> FROM (where (replace <pred> (attributes <table>)) 
+     (let ([filtered-table (SELECT <query> FROM (where (replace <condition> (attributes <table>)) 
                                         (SELECT * FROM <table>)))]) 
+       (begin 
+         (writeln filtered-table)
        (SELECT <query> FROM (order-by (replace <pred> (attributes filtered-table))
-                                      (SELECT * FROM filtered-table))))]
+                                      (SELECT * FROM filtered-table)))))]
     ))
