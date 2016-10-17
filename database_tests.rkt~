@@ -14,9 +14,18 @@
 
 ; Test helpers - use these instead of the built-in syntactic forms.
 ; DON'T export them from database.rkt!
-(define (And x y) (and x y))
-(define (Or x y) (or x y))
-(define (If x y z) (if x y z))
+;(define (And x y) (and x y))
+;(define (Or x y) (or x y))
+;(define (If x y z) (if x y z))
+
+;
+; Correction Oct 5 2016
+(define-syntax If
+  (syntax-rules ()
+  ((If a b c)
+  (if a b c))))
+; Please do define And, Or as syntactic forms
+; We have actually done this in class you may use the class code and this week's lab code for this.
 
 ; Sample tables - add more tables!
 ; Ideas: empty table; table with just 1 attribute; 0 attributes; duplicates
@@ -50,7 +59,6 @@ and your TAs will appreciate it!
 
 ; ---- SELECT/FROM tests ----
 ; Select all
-; good
 (test (SELECT * FROM Person)
       '(("Name" "Age" "LikesChocolate") 
         ("David" 20 #t) 
@@ -83,10 +91,7 @@ and your TAs will appreciate it!
    ("Bye" 5)
    ("Hi" 10)))
 
-
-#|
 ; Select all from two product of two tables
-;
 (test (SELECT * FROM [Person "P"] [Teaching "T"])
       '(("P.Name" "Age" "LikesChocolate" "T.Name" "Course")
         ("David" 20 #t "David" "CSC324")
@@ -378,6 +383,3 @@ and your TAs will appreciate it!
    (1 "Dog" "Cat")
    (10 "Hi" "Bye")
    (10 "Dog" "Cat")))
-
-|#
-

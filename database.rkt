@@ -273,15 +273,13 @@ Return index of first occurence of character char
                                         (SELECT * FROM <table>)))]
     ;select, 1 table, order by
     [(SELECT <query> FROM <table> ORDER BY <pred>)
-     (SELECT <query> FROM (order-by (replace <pred> (attributes <table>))
+     (SELECT <query> FROM (order-by (replace <pred> (attributes (SELECT * FROM <table>)))
                                     (SELECT * FROM <table>)))]
 
     ;select, multiple tables, order by, where
     [(SELECT <query> FROM <table> WHERE <condition> ORDER BY <pred>)
-     (let ([filtered-table (SELECT <query> FROM (where (replace <condition> (attributes <table>)) 
+     (let ([filtered-table (SELECT * FROM (where (replace <condition> (attributes <table>)) 
                                         (SELECT * FROM <table>)))]) 
-       (begin 
-         (writeln filtered-table)
        (SELECT <query> FROM (order-by (replace <pred> (attributes filtered-table))
-                                      (SELECT * FROM filtered-table)))))]
+                                      (SELECT * FROM filtered-table))))]
     ))
