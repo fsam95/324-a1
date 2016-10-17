@@ -147,12 +147,22 @@ A function 'replace-attr' that takes:
   (if 
     (equal? query WILDCARD)
     filtered-table
-    (append (list query) (map (lambda (tuple)
-
+    (append (list (validate-attrs-exist query (attributes filtered-table))) (map (lambda (tuple)
            (extract-values query tuple (list-ref filtered-table 0)))
          (tuples filtered-table)))
     )
   )
+
+(define (validate-attrs-exist query attrs)
+  (if (equal? (filter (column-in-attrs? attrs) query) query)
+      query
+      '"Column not found"))
+
+(define (column-in-attrs? attrs)
+  (lambda (column-name)
+            (if (member column-name attrs)
+             #t
+             #f)))
 
 
 (define WILDCARD *)
@@ -170,7 +180,7 @@ create the filter-function on your own
              attr)
            )
          (attributes table))])
-    (append (list fixed-attributes) (tuples table))
+    (cons fixed-attributes (tuples table))
     )
   )
 
@@ -190,7 +200,7 @@ create the filter-function on your own
 |#
 (define (cartesian-product-one table-one table-two name-two)
   (let ([combined-attributes (append (attributes table-one) (name-cols (attributes table-two) name-two))])
-    (append (list combined-attributes) (cartesian-product (tuples table-one) (tuples table-two))))
+    (cons combined-attributes (cartesian-product (tuples table-one) (tuples table-two))))
   )
 
 (define (name-cols attrs name)
@@ -202,7 +212,7 @@ create the filter-function on your own
 (define (cartesian-product-two table-one table-two name-one name-two)
   (let ([combined-attributes (append (name-cols (attributes table-one) name-one) (name-cols (attributes table-two) name-two))]) 
     (begin 
-      (append (list combined-attributes) (cartesian-product (tuples table-one) (tuples table-two))))
+      (cons combined-attributes (cartesian-product (tuples table-one) (tuples table-two))))
       )
   )
 
