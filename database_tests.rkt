@@ -41,6 +41,18 @@
     ("David" "CSC343")
     ))
 
+(define FaveFoods
+  '(("Name" "Food")
+    ("David" "Corn")
+    ("Paul" "Pizza")
+    ))
+
+(define Hobbies
+  '(("Name" "Hobby")
+    ("Jen" "Skiing")
+    ("Paul" "Running")
+    ))
+
 
 #|
 All tests go below. 
