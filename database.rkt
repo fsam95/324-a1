@@ -136,6 +136,14 @@ A function 'replace-attr' that takes:
                       (eval (substitute lambdas tuple) ns)) )) table)
   )
 
+(define (order-by lambdas table)
+  (append (list (attributes table)) (sort (tuples table) > #:key (lambda (tuple) 
+                                                                   (let ([subbed-expr (substitute lambdas tuple)])
+                                                                      (if (number? (first subbed-expr)) (first subbed-expr)
+                                                                        (eval subbed-expr ns))
+                                                                     ))))
+  )
+
 (define (extract-values query tuple attribute-list) ;s attribute list is query
   (map (lambda (attribute) 
          ((replace-attr attribute attribute-list) tuple) 
@@ -163,17 +171,37 @@ create the filter-function on your own
 |#
 (define-syntax SELECT
   (syntax-rules (FROM WHERE ORDER BY)
+    ;simple select
+    [(SELECT <query> FROM <table>) 
+     (selection <query> (rename-unique-attrs <table>))]
+
+    ;simple select, matches literal table
+    [(SELECT <query> FROM [<quote> <table>]) 
+     (selection <query> (rename-unique-attrs (<quote> <table>)))]
+
+    ;select, multiple tables 
     [(SELECT <query> FROM [<table1> <name1>] [<table2> <name2>] <next-table> ...)
      (SELECT <query> FROM (cartesian-product-two <table1> <table2> <name1> <name2>) <next-table> ...)]
     [(SELECT <query> FROM <table1> [<table2> <name2>] <next-table> ...)
      (SELECT <query> FROM (cartesian-product-one <table1> <table2> <name2>) <next-table> ...)]
-    [(SELECT <query> FROM [<quote> <table>]) 
-     (selection <query> (rename-unique-attrs (<quote> <table>)))]
-    [(SELECT <query> FROM <table>) 
-     (selection <query> (rename-unique-attrs <table>))]
+    
+    ;select, 1 table, where
     [(SELECT <query> FROM <table> WHERE <pred>)
      (SELECT <query> FROM (where (replace <pred> (attributes <table>)) 
                                         (SELECT * FROM <table>)))]
+
+    ;select, multiple tables, where
+    
+
+    ;select, 1 table, order by
+    [(SELECT <query> FROM <table> ORDER BY <pred>)
+     (SELECT <query> FROM (order-by (replace <pred> (attributes <table>))
+                                    (SELECT * FROM <table>)))]
+
+    ;select, multiple tables, order by
+    
+    
+    ;select, multiple tables, order by, where
     ))
 
 (define (rename-unique-attrs table)
@@ -224,6 +252,7 @@ create the filter-function on your own
 (define (cartesian-product table1 table2)
     (append* (map (lambda (x) (map (lambda (y) (append x y)) table2 )) table1))
     )
+
 
 #|
 Return index of first occurence of character char

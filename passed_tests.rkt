@@ -162,8 +162,32 @@ and your TAs will appreciate it!
         ("Jen" 30 #t)
         ("Paul" 100 #f)))
 
+(test (SELECT *
+        FROM [Person "P"] [Teaching "T"]
+        WHERE (equal? "P.Name" "T.Name"))
+      '(("P.Name" "Age" "LikesChocolate" "T.Name" "Course")
+        ("David" 20 #t "David" "CSC324")
+        ("David" 20 #t "David" "CSC343")
+        ("Paul" 100 #f "Paul" "CSC108")))
+
 ;(test (replace (> "Age" 25) Person)
 ;      (list (replace-attr > (attributes Person)) (replace-attr "Age" (attributes Person)) (replace-attr 25 (attributes Person))))
 
 (test (substitute (list (replace-attr > (attributes Person)) (replace-attr "Age" (attributes Person)) (replace-attr 25 (attributes Person))) '("Jen" 30 #t))
       (list > 30 25))
+
+(test (SELECT *
+        FROM Person
+        ORDER BY "Age")
+      '(("Name" "Age" "LikesChocolate")
+        ("Paul" 100 #f)
+        ("Jen" 30 #t)
+        ("David" 20 #t)))
+
+(test (SELECT *
+        FROM Person
+        ORDER BY (string-length "Name"))
+      '(("Name" "Age" "LikesChocolate")
+        ("David" 20 #t)
+        ("Paul" 100 #f)
+        ("Jen" 30 #t)))
