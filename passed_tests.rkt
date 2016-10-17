@@ -49,7 +49,7 @@ and your TAs will appreciate it!
 ; Select all
 ; good
 
-
+#|
 (test (SELECT * FROM Person)
       '(("Name" "Age" "LikesChocolate") 
         ("David" 20 #t) 
@@ -335,6 +335,7 @@ and your TAs will appreciate it!
    ("Paul" 100 #f "Paul" "CSC108")
    ("David" 20 #t "David" "CSC324")
    ("David" 20 #t "David" "CSC343")))
+|#
 (test
  (SELECT '("Name") 
    FROM Person 
@@ -344,6 +345,7 @@ and your TAs will appreciate it!
    ("Jen")
    ("David")))
 
+#|
 (test (SELECT *
         FROM [Person "P"] [Teaching "T"]
         WHERE (equal? "P.Name" "T.Name"))
@@ -449,3 +451,5 @@ and your TAs will appreciate it!
       '(("C" "B")
         (3 2)
         (40 10)))
+
+|#
